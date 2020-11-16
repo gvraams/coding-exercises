@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+
+<title>module SoftDeletable - RDoc Documentation</title>
+
+<script type="text/javascript">
+  var rdoc_rel_prefix = "./";
+  var index_rel_prefix = "./";
+</script>
+
+<script src="./js/navigation.js" defer></script>
+<script src="./js/search.js" defer></script>
+<script src="./js/search_index.js" defer></script>
+<script src="./js/searcher.js" defer></script>
+<script src="./js/darkfish.js" defer></script>
+
+<link href="./css/fonts.css" rel="stylesheet">
+<link href="./css/rdoc.css" rel="stylesheet">
+
+
+
+
+<body id="top" role="document" class="module">
+<nav role="navigation">
+  <div id="project-navigation">
+    <div id="home-section" role="region" title="Quick navigation" class="nav-section">
+  <h2>
+    <a href="./index.html" rel="home">Home</a>
+  </h2>
+
+  <div id="table-of-contents-navigation">
+    <a href="./table_of_contents.html#pages">Pages</a>
+    <a href="./table_of_contents.html#classes">Classes</a>
+    <a href="./table_of_contents.html#methods">Methods</a>
+  </div>
+</div>
+
+    <div id="search-section" role="search" class="project-section initially-hidden">
+  <form action="#" method="get" accept-charset="utf-8">
+    <div id="search-field-wrapper">
+      <input id="search-field" role="combobox" aria-label="Search"
+             aria-autocomplete="list" aria-controls="search-results"
+             type="text" name="search" placeholder="Search" spellcheck="false"
+             title="Type to search, Up and Down to navigate, Enter to load">
+    </div>
+
+    <ul id="search-results" aria-label="Search Results"
+        aria-busy="false" aria-expanded="false"
+        aria-atomic="false" class="initially-hidden"></ul>
+  </form>
+</div>
+
+  </div>
+
+  
+
+  <div id="class-metadata">
+    
+    
+    <div id="includes-section" class="nav-section">
+  <h3>Included Modules</h3>
+
+  <ul class="link-list">
+  
+  
+    <li><span class="include">Discard::Model</span>
+  
+  
+  </ul>
+</div>
+
+    
+    <!-- Method Quickref -->
+<div id="method-list-section" class="nav-section">
+  <h3>Methods</h3>
+
+  <ul class="link-list" role="directory">
+    
+    <li ><a href="#method-c-allow_active_record_destroy">::allow_active_record_destroy</a>
+    
+    <li ><a href="#method-c-can_destroy_active_record-3D">::can_destroy_active_record=</a>
+    
+    <li ><a href="#method-c-can_destroy_active_record-3F">::can_destroy_active_record?</a>
+    
+    <li ><a href="#method-c-disable_soft_delete-3D">::disable_soft_delete=</a>
+    
+    <li ><a href="#method-c-disable_soft_delete-3F">::disable_soft_delete?</a>
+    
+    <li ><a href="#method-c-included">::included</a>
+    
+    <li ><a href="#method-c-with_soft_deleted">::with_soft_deleted</a>
+    
+    <li ><a href="#method-i-active-3F">#active?</a>
+    
+    <li ><a href="#method-i-prevent_active_record_destroy">#prevent_active_record_destroy</a>
+    
+    <li ><a href="#method-i-soft_delete">#soft_delete</a>
+    
+    <li ><a href="#method-i-soft_deleted-3F">#soft_deleted?</a>
+    
+    <li ><a href="#method-i-soft_destroy">#soft_destroy</a>
+    
+    <li ><a href="#method-i-undelete">#undelete</a>
+    
+    <li ><a href="#method-i-undestroy">#undestroy</a>
+    
+  </ul>
+</div>
+
+  </div>
+</nav>
+
+<main role="main" aria-labelledby="module-SoftDeletable">
+  <h1 id="module-SoftDeletable" class="module">
+    module SoftDeletable
+  </h1>
+
+  <section class="description">
+    
+  </section>
+
+  
+  <section id="5Buntitled-5D" class="documentation-section">
+    
+
+    
+
+    
+
+    
+
+    
+     <section id="public-class-5Buntitled-5D-method-details" class="method-section">
+       <header>
+         <h3>Public Class Methods</h3>
+       </header>
+
+    
+      <div id="method-c-allow_active_record_destroy" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">allow_active_record_destroy</span><span
+            class="method-args">(&amp;block)</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Accepts a block in which records can be destroyed regardless of whether they&#39;re marked for deletion.</p>
+
+<h4 id="method-c-allow_active_record_destroy-label-Examples">Examples<span><a href="#method-c-allow_active_record_destroy-label-Examples">&para;</a> <a href="#top">&uarr;</a></span></h4>
+
+<pre class="ruby"><span class="ruby-constant">GroupEvent</span>.<span class="ruby-identifier">active</span>.<span class="ruby-identifier">destroy_all</span> <span class="ruby-comment">#Failure</span>
+
+<span class="ruby-constant">SoftDeletable</span>.<span class="ruby-identifier">allow_active_record_destroy</span> <span class="ruby-keyword">do</span>
+  <span class="ruby-constant">GroupEvent</span>.<span class="ruby-identifier">active</span>.<span class="ruby-identifier">destroy_all</span> <span class="ruby-comment">#Succeess</span>
+<span class="ruby-keyword">end</span>
+</pre>
+          
+          
+
+          
+          <div class="method-source-code" id="allow_active_record_destroy-source">
+            <pre><span class="ruby-comment"># File lib/soft_deletable.rb, line 146</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">allow_active_record_destroy</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+  <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-string">&quot;block required&quot;</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">block</span>.<span class="ruby-identifier">nil?</span>
+  <span class="ruby-identifier">old_value</span> = <span class="ruby-identifier">can_destroy_active_record?</span>
+  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">can_destroy_active_record</span> = <span class="ruby-keyword">true</span>
+
+  <span class="ruby-keyword">return</span> <span class="ruby-identifier">block</span>.<span class="ruby-identifier">call</span>
+<span class="ruby-keyword">ensure</span>
+  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">can_destroy_active_record</span> = <span class="ruby-identifier">old_value</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-c-can_destroy_active_record-3D" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">can_destroy_active_record=</span><span
+            class="method-args">(allow_destroy)</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>With this enabled, :destroy &amp; :destroy_all methods will truly remove records from the DB regardless of whether they&#39;re marked for deletion. It is critical to restore it at the end in an `ensure` block to prevent undesirable side effects.</p>
+          
+          
+
+          
+          <div class="method-source-code" id="can_destroy_active_record-3D-source">
+            <pre><span class="ruby-comment"># File lib/soft_deletable.rb, line 158</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">can_destroy_active_record=</span>(<span class="ruby-identifier">allow_destroy</span>)
+  <span class="ruby-constant">Thread</span>.<span class="ruby-identifier">current</span>[<span class="ruby-value">:can_destroy_active_record</span>] = <span class="ruby-identifier">allow_destroy</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-c-can_destroy_active_record-3F" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">can_destroy_active_record?</span><span
+            class="method-args">()</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Determines whether record can be destroyed without being marked for deletion @return [Boolean] true if record is not marked for deletion, false otherwise</p>
+          
+          
+
+          
+          <div class="method-source-code" id="can_destroy_active_record-3F-source">
+            <pre><span class="ruby-comment"># File lib/soft_deletable.rb, line 164</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">can_destroy_active_record?</span>
+  <span class="ruby-operator">!</span><span class="ruby-operator">!</span><span class="ruby-constant">Thread</span>.<span class="ruby-identifier">current</span>[<span class="ruby-value">:can_destroy_active_record</span>]
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-c-disable_soft_delete-3D" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">disable_soft_delete=</span><span
+            class="method-args">(disable)</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>With this enabled, queries returns records that are marked for deletion. Check `default_scope` definition. It is critical to restore it at the end in an `ensure` block to prevent undesirable side effects.</p>
+          
+          
+
+          
+          <div class="method-source-code" id="disable_soft_delete-3D-source">
+            <pre><span class="ruby-comment"># File lib/soft_deletable.rb, line 170</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">disable_soft_delete=</span>(<span class="ruby-identifier">disable</span>)
+  <span class="ruby-constant">Thread</span>.<span class="ruby-identifier">current</span>[<span class="ruby-value">:disable_soft_delete</span>] = <span class="ruby-identifier">disable</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-c-disable_soft_delete-3F" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">disable_soft_delete?</span><span
+            class="method-args">()</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Returns true when invoked within `with_soft_deleted` block.</p>
+          
+          
+
+          
+          <div class="method-source-code" id="disable_soft_delete-3F-source">
+            <pre><span class="ruby-comment"># File lib/soft_deletable.rb, line 175</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">disable_soft_delete?</span>
+  <span class="ruby-operator">!</span><span class="ruby-operator">!</span><span class="ruby-constant">Thread</span>.<span class="ruby-identifier">current</span>[<span class="ruby-value">:disable_soft_delete</span>]
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-c-included" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">included</span><span
+            class="method-args">(base)</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>“Mark as Deleted” via custom implementation on top of Discard gem</p>
+
+<p>Implemented methods: Mark for deletion:</p>
+
+<pre>:soft_delete [Sets deleted_at for a record]
+:soft_delete_all [Sets deleted_at for a collection of records]
+:soft_destroy [Sets deleted_at for a record &amp; invokes callbacks]
+:soft_destroy_all [Sets deleted_at for a collection of records &amp; invokes callbacks]</pre>
+
+<p>Restore records:</p>
+
+<pre>:undelete [Unsets deleted_at for a record]
+:undelete_all [Unsets deleted_at for a collection of records]
+:undestroy [Unsets deleted_at for a record &amp; invokes callbacks]
+:undestroy_all [Unsets deleted_at for a collection of records &amp; invokes callbacks]</pre>
+
+<p>Destroy methods succeed when the ActiveRecord is already marked for deletion or invoked with <code>:SoftDeletable.allow_active_record_destroy</code> block.</p>
+
+<pre>:destroy &amp; :destroy_all will only succeed on records that have been marked for deletion.</pre>
+          
+          
+
+          
+          <div class="method-source-code" id="included-source">
+            <pre><span class="ruby-comment"># File lib/soft_deletable.rb, line 20</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier ruby-title">included</span>(<span class="ruby-identifier">base</span>)
+  <span class="ruby-identifier">base</span>.<span class="ruby-identifier">class_eval</span> <span class="ruby-keyword">do</span>
+    <span class="ruby-identifier">include</span> <span class="ruby-constant">Discard</span><span class="ruby-operator">::</span><span class="ruby-constant">Model</span>
+
+    <span class="ruby-keyword">self</span>.<span class="ruby-identifier">discard_column</span> = <span class="ruby-value">:deleted_at</span>
+
+    <span class="ruby-identifier">scope</span> <span class="ruby-value">:active</span>, <span class="ruby-operator">-&gt;</span> { <span class="ruby-identifier">kept</span> }
+    <span class="ruby-identifier">scope</span> <span class="ruby-value">:soft_deleted</span>, <span class="ruby-operator">-&gt;</span> { <span class="ruby-identifier">discarded</span> }
+    <span class="ruby-identifier">scope</span> <span class="ruby-value">:with_soft_deleted</span>, <span class="ruby-operator">-&gt;</span> { <span class="ruby-identifier">with_discarded</span> }
+
+    <span class="ruby-identifier">validate</span> <span class="ruby-value">:prevent_active_record_destroy</span>, <span class="ruby-value">on:</span> [<span class="ruby-value">:destroy</span>]
+
+    <span class="ruby-identifier">default_scope</span> <span class="ruby-operator">-&gt;</span> { <span class="ruby-constant">SoftDeletable</span>.<span class="ruby-identifier">disable_soft_delete?</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">with_soft_deleted</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">active</span> }
+
+    <span class="ruby-identifier">define_model_callbacks</span> <span class="ruby-value">:soft_destroy</span>
+    <span class="ruby-identifier">define_model_callbacks</span> <span class="ruby-value">:undestroy</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">base</span>.<span class="ruby-identifier">extend</span>(<span class="ruby-constant">ClassMethods</span>)
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-c-with_soft_deleted" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">with_soft_deleted</span><span
+            class="method-args">(&amp;block)</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Accepts a block in which queries include records that have been marked for deletion.</p>
+
+<h4 id="method-c-with_soft_deleted-label-Examples">Examples<span><a href="#method-c-with_soft_deleted-label-Examples">&para;</a> <a href="#top">&uarr;</a></span></h4>
+
+<pre class="ruby"><span class="ruby-constant">GroupEvent</span>.<span class="ruby-identifier">with_soft_deleted</span>.<span class="ruby-identifier">count</span> <span class="ruby-comment">#2</span>
+
+<span class="ruby-constant">GroupEvent</span>.<span class="ruby-identifier">all</span>.<span class="ruby-identifier">count</span> <span class="ruby-comment">#1</span>
+
+<span class="ruby-constant">SoftDeletable</span>.<span class="ruby-identifier">with_soft_deleted</span> <span class="ruby-keyword">do</span>
+  <span class="ruby-constant">GroupEvent</span>.<span class="ruby-identifier">all</span>.<span class="ruby-identifier">count</span> <span class="ruby-comment">#2</span>
+<span class="ruby-keyword">end</span>
+</pre>
+          
+          
+
+          
+          <div class="method-source-code" id="with_soft_deleted-source">
+            <pre><span class="ruby-comment"># File lib/soft_deletable.rb, line 128</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">with_soft_deleted</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+  <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-string">&quot;block required&quot;</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">block</span>.<span class="ruby-identifier">nil?</span>
+  <span class="ruby-identifier">old_value</span> = <span class="ruby-identifier">disable_soft_delete?</span>
+  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">disable_soft_delete</span> = <span class="ruby-keyword">true</span>
+
+  <span class="ruby-keyword">return</span> <span class="ruby-identifier">block</span>.<span class="ruby-identifier">call</span>
+<span class="ruby-keyword">ensure</span>
+  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">disable_soft_delete</span> = <span class="ruby-identifier">old_value</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+    </section>
+  
+     <section id="public-instance-5Buntitled-5D-method-details" class="method-section">
+       <header>
+         <h3>Public Instance Methods</h3>
+       </header>
+
+    
+      <div id="method-i-active-3F" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">active?</span><span
+            class="method-args">()</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Determines whether this record is not marked for deletion @return [Boolean] true if record is not marked for deletion, false otherwise</p>
+          
+          
+
+          
+          <div class="method-source-code" id="active-3F-source">
+            <pre><span class="ruby-comment"># File lib/soft_deletable.rb, line 91</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">active?</span>
+  <span class="ruby-operator">!</span><span class="ruby-identifier">soft_deleted?</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-i-prevent_active_record_destroy" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">prevent_active_record_destroy</span><span
+            class="method-args">()</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Prevents records from being destroyed unless they&#39;re marked for deletion @return [Boolean] true if the record can be destroyed without being marked for deletion first</p>
+          
+          
+
+          
+          <div class="method-source-code" id="prevent_active_record_destroy-source">
+            <pre><span class="ruby-comment"># File lib/soft_deletable.rb, line 43</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">prevent_active_record_destroy</span>
+  <span class="ruby-keyword">return</span> <span class="ruby-keyword">true</span> <span class="ruby-keyword">if</span> <span class="ruby-constant">SoftDeletable</span>.<span class="ruby-identifier">can_destroy_active_record?</span>
+
+  <span class="ruby-keyword">unless</span> <span class="ruby-identifier">soft_deleted?</span>
+    <span class="ruby-keyword">self</span>.<span class="ruby-identifier">errors</span>[<span class="ruby-value">:base</span>] <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-string">&quot;Cannot destroy records that are not marked for deletion&quot;</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-i-soft_delete" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">soft_delete</span><span
+            class="method-args">()</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Soft deletes without callbacks</p>
+
+<h4 id="method-i-soft_delete-label-Examples">Examples<span><a href="#method-i-soft_delete-label-Examples">&para;</a> <a href="#top">&uarr;</a></span></h4>
+
+<pre class="ruby"><span class="ruby-constant">GroupEvent</span>.<span class="ruby-identifier">first</span>.<span class="ruby-identifier">soft_delete</span>
+</pre>
+          
+          
+
+          
+          <div class="method-source-code" id="soft_delete-source">
+            <pre><span class="ruby-comment"># File lib/soft_deletable.rb, line 71</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">soft_delete</span>
+  <span class="ruby-identifier">update</span>(<span class="ruby-value">deleted_at:</span> <span class="ruby-constant">Time</span>.<span class="ruby-identifier">current</span>)
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-i-soft_deleted-3F" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">soft_deleted?</span><span
+            class="method-args">()</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Determines whether this record is marked for deletion. @return [Boolean] true if record is marked for deletion, false otherwise</p>
+          
+          
+
+          
+          <div class="method-source-code" id="soft_deleted-3F-source">
+            <pre><span class="ruby-comment"># File lib/soft_deletable.rb, line 85</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">soft_deleted?</span>
+  <span class="ruby-identifier">discarded?</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-i-soft_destroy" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">soft_destroy</span><span
+            class="method-args">()</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Soft deletes with callbacks.</p>
+
+<h4 id="method-i-soft_destroy-label-Examples">Examples<span><a href="#method-i-soft_destroy-label-Examples">&para;</a> <a href="#top">&uarr;</a></span></h4>
+
+<pre class="ruby"><span class="ruby-constant">GroupEvent</span>.<span class="ruby-identifier">first</span>.<span class="ruby-identifier">soft_destroy</span>
+</pre>
+          
+          
+
+          
+          <div class="method-source-code" id="soft_destroy-source">
+            <pre><span class="ruby-comment"># File lib/soft_deletable.rb, line 55</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">soft_destroy</span>
+  <span class="ruby-identifier">discard</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-i-undelete" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">undelete</span><span
+            class="method-args">()</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Restores without callbacks</p>
+
+<h4 id="method-i-undelete-label-Examples">Examples<span><a href="#method-i-undelete-label-Examples">&para;</a> <a href="#top">&uarr;</a></span></h4>
+
+<pre class="ruby"><span class="ruby-constant">GroupEvent</span>.<span class="ruby-identifier">first</span>.<span class="ruby-identifier">undelete</span>
+</pre>
+          
+          
+
+          
+          <div class="method-source-code" id="undelete-source">
+            <pre><span class="ruby-comment"># File lib/soft_deletable.rb, line 79</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">undelete</span>
+  <span class="ruby-identifier">update</span>(<span class="ruby-value">deleted_at:</span> <span class="ruby-keyword">nil</span>)
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-i-undestroy" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">undestroy</span><span
+            class="method-args">()</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Restores with callbacks.</p>
+
+<h4 id="method-i-undestroy-label-Examples">Examples<span><a href="#method-i-undestroy-label-Examples">&para;</a> <a href="#top">&uarr;</a></span></h4>
+
+<pre class="ruby"><span class="ruby-constant">GroupEvent</span>.<span class="ruby-identifier">first</span>.<span class="ruby-identifier">undestroy</span>
+</pre>
+          
+          
+
+          
+          <div class="method-source-code" id="undestroy-source">
+            <pre><span class="ruby-comment"># File lib/soft_deletable.rb, line 63</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">undestroy</span>
+  <span class="ruby-identifier">undiscard</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+    </section>
+  
+  </section>
+
+</main>
+
+
+<footer id="validator-badges" role="contentinfo">
+  <p><a href="https://validator.w3.org/check/referer">Validate</a>
+  <p>Generated by <a href="https://ruby.github.io/rdoc/">RDoc</a> 6.2.1.
+  <p>Based on <a href="http://deveiate.org/projects/Darkfish-RDoc/">Darkfish</a> by <a href="http://deveiate.org">Michael Granger</a>.
+</footer>
+
