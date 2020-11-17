@@ -25,9 +25,9 @@ module SoftDeletable
 
       self.discard_column = :deleted_at
 
-      scope :active, -> { kept }
-      scope :soft_deleted, -> { discarded }
-      scope :with_soft_deleted, -> { with_discarded }
+      scope :with_soft_deleted, -> { unscope(where: self.discard_column) }
+      scope :active,            -> { with_soft_deleted.where(self.discard_column => nil) }
+      scope :soft_deleted,      -> { with_soft_deleted.where.not(self.discard_column => nil) }
 
       before_destroy :prevent_destroy
 
@@ -39,7 +39,7 @@ module SoftDeletable
 
   # Prevents records from being destroyed unless they're marked for deletion
   def prevent_destroy
-    unless self.soft_deleted?
+    unless self.discarded?
       self.errors[:base] << "Cannot destroy records that are not marked for deletion"
       throw :abort
     end
@@ -66,7 +66,7 @@ module SoftDeletable
   #  
   #  GroupEvent.first.soft_delete
   def soft_delete
-    update(deleted_at: Time.current)
+    update(self.discard_column => Time.current)
   end
 
   # Restores without callbacks
@@ -74,19 +74,13 @@ module SoftDeletable
   #  
   #  GroupEvent.first.undo_delete
   def undo_delete
-    update(deleted_at: nil)
-  end
-
-  # Determines whether this record is marked for deletion.
-  # @return [Boolean] true if record is marked for deletion, false otherwise
-  def soft_deleted?
-    discarded?
+    update(self.discard_column => nil)
   end
 
   # Determines whether this record is not marked for deletion
   # @return [Boolean] true if record is not marked for deletion, false otherwise
   def active?
-    !soft_deleted?
+    !discarded?
   end
 
   module ClassMethods
@@ -102,12 +96,12 @@ module SoftDeletable
 
     # Marks all records for deletion without callbacks
     def soft_delete_all
-      update_all(deleted_at: Time.current)
+      update_all(self.discard_column => Time.current)
     end
 
     # Restores all records without callbacks
     def undo_delete_all
-      update_all(deleted_at: nil)
+      update_all(self.discard_column => nil)
     end
   end
 

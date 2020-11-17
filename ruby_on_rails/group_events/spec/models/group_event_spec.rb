@@ -204,7 +204,7 @@ RSpec.describe GroupEvent, type: :model do
       end
     end
 
-    it "reject record destruction unless marked for it" do
+    it "prevent record destruction unless marked for it" do
       initial_count = GroupEvent.count
 
       expect(group_event.save).to eq(true)
@@ -212,6 +212,31 @@ RSpec.describe GroupEvent, type: :model do
 
       expect(group_event.destroy).to eq(false)
       expect(GroupEvent.count).to eq(initial_count + 1)
+    end
+
+    it "destroys soft deleted record" do
+      initial_count = GroupEvent.count
+
+      expect(group_event.save).to eq(true)
+      expect(GroupEvent.count).to eq(initial_count + 1)
+
+      group_event.soft_destroy
+      expect(GroupEvent.count).to eq(initial_count)
+    end
+
+    it "scopes :active, :soft_deleted, :with_soft_deleted" do
+      initial_count = GroupEvent.count
+      initial_soft_deleted_count = GroupEvent.soft_deleted.count
+
+      expect(group_event.save).to eq(true)
+      expect(GroupEvent.active.count).to eq(initial_count + 1)
+      expect(GroupEvent.soft_deleted.count).to eq(initial_soft_deleted_count)
+
+      group_event.soft_destroy
+      expect(GroupEvent.active.count).to eq(initial_count)
+      expect(GroupEvent.soft_deleted.count).to eq(initial_soft_deleted_count + 1)
+      expect(GroupEvent.with_soft_deleted.count).to eq(initial_count + 1)
+      expect(GroupEvent.count).to eq(initial_count)
     end
   end
 end
