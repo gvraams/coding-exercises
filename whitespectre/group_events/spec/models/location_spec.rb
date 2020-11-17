@@ -1,60 +1,29 @@
 require 'rails_helper'
 
 RSpec.describe Location, type: :model do
-  it "has a name" do
-    location_id = SecureRandom.uuid
+  context "validations" do
+    it { should validate_presence_of(:uuid) }
+    it { should validate_presence_of(:name) }
+    it { should have_many(:group_events) }
 
-    location = build(:location, {
-      uuid: location_id,
-      name: nil
-    })
+    it "rejects duplicate uuid" do
+      uuid = SecureRandom.uuid
 
-    expect(location.valid?).to be(false)
-    expect(location.errors.messages).to eq({ name: ["can't be blank"] })
+      location1 = build(:location, {
+        uuid: uuid,
+        name: "Chennai",
+      })
 
-    location.name = "Chennai"
+      expect(location1.valid?).to eq(true)
+      expect(location1.save).to eq(true)
 
-    expect(location.valid?).to be(true)
-    expect(location.save).to be(true)
-    expect(location.uuid).to eq(location_id)
-  end
+      location2 = build(:location, {
+        uuid: uuid,
+        name: "Bangalore",
+      })
 
-  it "has a UUID" do
-    location_id = nil
-
-    location = build(:location, {
-      uuid: nil,
-      name: "Chennai"
-    })
-
-    expect(location.valid?).to be(false)
-    expect(location.errors.messages).to eq({ uuid: ["can't be blank"] })
-
-    location_id = SecureRandom.uuid
-    location.uuid = location_id
-
-    expect(location.valid?).to be(true)
-    expect(location.save).to be(true)
-    expect(location.uuid).to eq(location_id)
-  end
-
-  it "rejects duplicate uuid" do
-    uuid = SecureRandom.uuid
-
-    location1 = build(:location, {
-      uuid: uuid,
-      name: "Chennai",
-    })
-
-    expect(location1.valid?).to eq(true)
-    expect(location1.save).to eq(true)
-
-    location2 = build(:location, {
-      uuid: uuid,
-      name: "Chennai",
-    })
-
-    expect(location2.valid?).to eq(false)
-    expect(location2.errors.messages).to eq({ uuid: ["has already been taken"] })
+      expect(location2.valid?).to eq(false)
+      expect(location2.errors.messages).to eq({ uuid: ["has already been taken"] })
+    end
   end
 end

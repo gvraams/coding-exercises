@@ -30,12 +30,35 @@ RSpec.describe GroupEvent, type: :model do
     end
   end
 
-  context "validations" do
+  context "mandatory validations" do
     it { should validate_presence_of(:uuid) }
-    it { should validate_presence_of(:name) }
-    it { should validate_presence_of(:description) }
-    it { should validate_presence_of(:location_id) }
-    it { should validate_presence_of(:created_by_id) }
+    it { should belong_to(:created_by) }
+    it { should belong_to(:location) }
+  end
+
+  context "validations as published" do
+    let(:event) {
+      build(:group_event, {
+        status: "published",
+        name: nil,
+        description: nil,
+        start_date: nil,
+        end_date: nil,
+        duration: nil,
+      })
+    }
+
+    it "validates presence of name, description, start_date, end_date & duration" do
+      expect(event.valid?).to eq(false)
+
+      expect(event.errors.messages).to eq({
+        name:        ["can't be blank"],
+        description: ["can't be blank"],
+        start_date:  ["can't be blank"],
+        end_date:    ["can't be blank"],
+        duration:    ["can't be blank"],
+      })
+    end
   end
 
   context "with two duration related fields set" do
@@ -55,21 +78,23 @@ RSpec.describe GroupEvent, type: :model do
     it "computes end_date given start_date & duration" do
       expect_fields_cant_be_blank(group_event)
 
-      group_event.start_date = 2.days.ago
+      group_event.start_date = 2.days.from_now
       group_event.duration = 3.days
 
       expect(group_event.valid?).to be(true)
       expect(group_event.save).to be(true)
-      expect(group_event.start_date.to_date).to eq(2.days.ago.to_date)
+      expect(group_event.start_date.to_date).to eq(2.days.from_now.to_date)
       expect(group_event.duration).to eq(3.days)
-      expect(group_event.end_date.to_date).to eq(Time.zone.today)
+      expect(group_event.end_date.to_date).to eq(4.days.from_now.to_date)
     end
 
     it "computes start_date given end_date & duration" do
       expect_fields_cant_be_blank(group_event)
 
-      group_event.duration = 3.days
-      group_event.end_date = 5.days.from_now
+      group_event.assign_attributes({
+        duration: 3.days,
+        end_date: 5.days.from_now,
+      })
 
       expect(group_event.valid?).to be(true)
       expect(group_event.save).to be(true)
@@ -81,30 +106,112 @@ RSpec.describe GroupEvent, type: :model do
     it "computes duration given start_date & end_date" do
       expect_fields_cant_be_blank(group_event)
 
-      group_event.start_date = 2.days.ago
-      group_event.end_date = 5.days.from_now
+      group_event.assign_attributes({
+        start_date: 2.days.from_now,
+        end_date: 5.days.from_now,
+      })
 
       expect(group_event.valid?).to be(true)
       expect(group_event.save).to be(true)
-      expect(group_event.duration).to eq(8.days)
-      expect(group_event.start_date.to_date).to eq(2.days.ago.to_date)
+      expect(group_event.duration).to eq(4.days)
+      expect(group_event.start_date.to_date).to eq(2.days.from_now.to_date)
       expect(group_event.end_date.to_date).to eq(5.days.from_now.to_date)
     end
 
     it "discards invalid duration given valid start_date & end_date" do
       expect_fields_cant_be_blank(group_event)
 
-      group_event.start_date = 2.days.ago
-      group_event.end_date = 5.days.from_now
-      # Invalid duration considering start_date & end_date
-      group_event.duration = 15
+      group_event.assign_attributes({
+        start_date: 2.days.from_now,
+        end_date: 5.days.from_now,
+        duration: 15.days, # Invalid duration considering given start_date & end_date
+      })
 
       expect(group_event.valid?).to be(true)
       expect(group_event.save).to be(true)
-      # Duration is correctly calculated as 8 days
-      expect(group_event.duration).to eq(8.days)
-      expect(group_event.start_date.to_date).to eq(2.days.ago.to_date)
+      # Duration is correctly calculated as 4 days
+      expect(group_event.duration).to eq(4.days)
+      expect(group_event.start_date.to_date).to eq(2.days.from_now.to_date)
       expect(group_event.end_date.to_date).to eq(5.days.from_now.to_date)
+    end
+
+    it "rejects record with end_date > start_date" do
+      group_event.assign_attributes({
+        start_date: 5.days.from_now,
+        end_date: 2.days.from_now,
+      })
+
+      expect(group_event.valid?).to be(false)
+      expect(group_event.errors.messages).to eq({ base: ["End date cannot be lesser than start date"] })
+    end
+
+    it "rejects record with start_date & end_date less than current time" do
+      group_event.assign_attributes({
+        start_date: 2.days.ago,
+        end_date: 1.days.ago,
+      })
+
+      expect(group_event.valid?).to be(false)
+
+      expect(group_event.errors.messages).to eq({
+        start_date: ["Start date cannot be in the past"],
+        end_date: ["End date cannot be in the past"],
+      })
+    end
+  end
+
+  context "soft deletion" do
+    let(:group_event) { build(:group_event, {
+      created_by: @gvraams,
+      location: @chennai,
+      start_date: 2.days.from_now,
+      end_date: 3.days.from_now,
+      status: "published",
+    }) }
+
+    it "soft deletes a record" do
+      initial_count = GroupEvent.count
+
+      expect(group_event.save).to eq(true)
+      expect(GroupEvent.count).to eq(initial_count + 1)
+
+      group_event.soft_destroy
+      expect(GroupEvent.count).to eq(initial_count)
+    end
+
+    it "able to access deleted record using `with_soft_deleted` scope" do
+      initial_count = GroupEvent.count
+
+      expect(group_event.save).to eq(true)
+      expect(GroupEvent.count).to eq(initial_count + 1)
+
+      group_event.soft_destroy
+      expect(GroupEvent.count).to eq(initial_count)
+      expect(GroupEvent.with_soft_deleted.count).to eq(initial_count + 1)
+    end
+
+    it "able to access deleted record using `with_soft_deleted` block" do
+      initial_count = GroupEvent.count
+
+      expect(group_event.save).to eq(true)
+      expect(GroupEvent.count).to eq(initial_count + 1)
+
+      group_event.soft_destroy
+      expect(GroupEvent.count).to eq(initial_count)
+
+      SoftDeletable.with_soft_deleted do
+        expect(GroupEvent.count).to eq(initial_count + 1)
+      end
+    end
+
+    it "reject record destruction unless marked for it" do
+      initial_count = GroupEvent.count
+
+      expect(group_event.save).to eq(true)
+      expect(GroupEvent.count).to eq(initial_count + 1)
+
+      expect(group_event.destroy).to eq(false)
+      expect(GroupEvent.count).to eq(initial_count + 1)
     end
   end
 end

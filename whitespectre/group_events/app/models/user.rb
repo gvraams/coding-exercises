@@ -1,9 +1,9 @@
 class User < ApplicationRecord
-  validates :uuid,     presence: true, uniqueness: true
+  include ChangedPrimaryKey
+
   validates :name,     presence: true
   validates :password, presence: true
-
-  validates :email, presence: true, uniqueness: { case_sensitive: false }, length: { maximum: 250 }
+  validates :email,    presence: true, uniqueness: { case_sensitive: false }, length: { maximum: 100 }
   validates_format_of :email, :with => /\A[^@\s]+@([^@\s]+\.)+[^@\s]+\z/
 
   has_many :group_events, as: :created_by, dependent: :destroy
@@ -12,7 +12,7 @@ class User < ApplicationRecord
 
   private
 
-  # Converts the given address into lower case before saving the record
+  # Converts the given email into lower case before saving the record
   def downcase_email
     self.email = self.email.downcase rescue nil
   end

@@ -22,6 +22,8 @@ RSpec.describe User, type: :model do
   end
 
   context "rejects invalid email" do
+    index = 0
+
     invalid_emails = [
       "gvraams@gmail",
       "@gmail.com",
@@ -33,7 +35,9 @@ RSpec.describe User, type: :model do
     ]
 
     invalid_emails.each do |invalid_email|
-      it "Invalid email check" do
+      index += 1
+
+      it "Invalid email check #{index}" do
         user = User.new({
           uuid: SecureRandom.uuid,
           name: "Gvraams",
@@ -69,9 +73,7 @@ RSpec.describe User, type: :model do
     expect(duplicate_user.valid?).to eq(false)
     expect(duplicate_user.errors.messages).to eq({ email: ["has already been taken"] })
 
-    duplicate_user = build(:user, {
-      email: "Gvraams@gmail.com",
-    })
+    duplicate_user.email = "Gvraams@GMail.Com"
 
     expect(duplicate_user.valid?).to eq(false)
     expect(duplicate_user.errors.messages).to eq({ email: ["has already been taken"] })

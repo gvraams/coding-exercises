@@ -5,7 +5,7 @@ FactoryBot.define do
     description { "Description" }
     created_by { FactoryBot.create(:user) }
     location { FactoryBot.create(:location) }
-    start_date { 2.days.ago }
+    start_date { 2.days.from_now }
     end_date { 3.days.from_now }
     duration { nil }
     status { nil }
