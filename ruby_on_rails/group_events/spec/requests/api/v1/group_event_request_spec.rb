@@ -18,7 +18,7 @@ def validate_event_from_response(json_response, attributes)
   # Validates json response
   expect(lhs).to eq(rhs)
   expect(lhs_start_date).to eq(rhs_start_date)
-  expect(lhs_end_date).to eq(rhs_end_date)  
+  expect(lhs_end_date).to eq(rhs_end_date)
 end
 
 RSpec.describe "Api::V1::GroupEvents", type: :request do

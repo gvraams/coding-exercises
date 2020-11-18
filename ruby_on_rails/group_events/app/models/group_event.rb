@@ -20,8 +20,8 @@ class GroupEvent < ApplicationRecord
   validates_length_of :name, maximum: 100
 
   # Custom validations
-  validate :has_valid_period?,    on: [:create, :update]
-  validate :has_valid_dates?,     on: [:create, :update]
+  validate :has_valid_period?, on: [:create, :update]
+  validate :has_valid_dates?,  on: [:create, :update]
 
   before_save :try_computing_event_duration
 
