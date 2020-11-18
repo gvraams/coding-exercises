@@ -60,16 +60,6 @@ class GroupEvent < ApplicationRecord
 
     is_valid = true
 
-    if self.start_date < Time.zone.now
-      self.errors.add(:start_date, "Start date cannot be in the past")
-      is_valid = false
-    end
-
-    if self.end_date < Time.zone.now
-      self.errors.add(:end_date, "End date cannot be in the past")
-      is_valid = false
-    end
-
     if self.start_date > self.end_date
       self.errors.add(:base, "End date cannot be lesser than start date")
       is_valid = false

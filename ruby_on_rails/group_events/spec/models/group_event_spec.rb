@@ -176,30 +176,18 @@ RSpec.describe GroupEvent, type: :model do
         start_date: ["can't be blank"],
       })
     end
-
-    it "rejects record with start_date & end_date less than current time" do
-      group_event.assign_attributes({
-        start_date: 2.days.ago,
-        end_date: 1.days.ago,
-      })
-
-      expect(group_event.valid?).to be(false)
-
-      expect(group_event.errors.messages).to eq({
-        start_date: ["Start date cannot be in the past"],
-        end_date: ["End date cannot be in the past"],
-      })
-    end
   end
 
   context "soft deletion" do
-    let(:group_event) { build(:group_event, {
-      created_by: @gvraams,
-      location: @chennai,
-      start_date: 2.days.from_now,
-      end_date: 3.days.from_now,
-      status: "published",
-    }) }
+    let(:group_event) {
+      build(:group_event, {
+        created_by: @gvraams,
+        location: @chennai,
+        start_date: 2.days.from_now,
+        end_date: 3.days.from_now,
+        status: "published",
+      })
+    }
 
     it "soft deletes a record" do
       initial_count = GroupEvent.count

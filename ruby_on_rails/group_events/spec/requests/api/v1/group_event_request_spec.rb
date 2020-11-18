@@ -1,5 +1,7 @@
 require 'rails_helper'
 
+PATH = "/api/v1/group_events"
+
 def validate_event_from_response(json_response, attributes)
   attributes = HashWithIndifferentAccess.new attributes
   json_response  = HashWithIndifferentAccess.new json_response
@@ -32,7 +34,7 @@ RSpec.describe "Api::V1::GroupEvents", type: :request do
   context "count" do
     it "active group events count" do
       group_event = create(:group_event)
-      get('/api/v1/group_events/count', headers: headers)
+      get("#{PATH}/count", headers: headers)
 
       expect(response).to have_http_status(200)
       json_response = JSON.parse(response.body)
@@ -44,7 +46,7 @@ RSpec.describe "Api::V1::GroupEvents", type: :request do
       group_event = create(:group_event)
       group_event.soft_destroy
 
-      get('/api/v1/group_events/count', headers: headers)
+      get("#{PATH}/count", headers: headers)
 
       expect(response).to have_http_status(200)
       json_response = JSON.parse(response.body)
@@ -57,7 +59,7 @@ RSpec.describe "Api::V1::GroupEvents", type: :request do
     it "HTTP response & status" do
       group_event = create(:group_event)
       attributes  = group_event.attributes
-      get('/api/v1/group_events', headers: headers)
+      get(PATH, headers: headers)
 
       # Validates HTTP Response status
       expect(response).to have_http_status(200)
@@ -81,7 +83,7 @@ RSpec.describe "Api::V1::GroupEvents", type: :request do
       })
 
       # --- GET#index without :limit
-      get('/api/v1/group_events', headers: headers)
+      get(PATH, headers: headers)
 
       # Validates HTTP Response status
       expect(response).to have_http_status(200)
@@ -90,7 +92,7 @@ RSpec.describe "Api::V1::GroupEvents", type: :request do
       expect(json_response.length).to eq(3)
 
       # --- GET#index with :limit
-      get('/api/v1/group_events', headers: headers, params: { limit: 1 })
+      get(PATH, headers: headers, params: { limit: 1 })
 
       # Validates HTTP Response status
       expect(response).to have_http_status(200)
@@ -100,7 +102,7 @@ RSpec.describe "Api::V1::GroupEvents", type: :request do
       expect(json_response.first["uuid"]).to eq(first.uuid)
 
       # --- GET#index with :offset
-      get('/api/v1/group_events', headers: headers, params: { offset: 2 })
+      get(PATH, headers: headers, params: { offset: 2 })
 
       # Validates HTTP Response status
       expect(response).to have_http_status(200)
@@ -110,7 +112,7 @@ RSpec.describe "Api::V1::GroupEvents", type: :request do
       expect(json_response.first["uuid"]).to eq(third.uuid)
 
       # --- GET#index with both :limit & :offset
-      get('/api/v1/group_events', headers: headers, params: { limit: 1, offset: 1 })
+      get(PATH, headers: headers, params: { limit: 1, offset: 1 })
 
       # Validates HTTP Response status
       expect(response).to have_http_status(200)
@@ -122,12 +124,20 @@ RSpec.describe "Api::V1::GroupEvents", type: :request do
   end
 
   context "show" do
+    it "return 404 if record could not be found" do
+      get("#{PATH}/#{SecureRandom.uuid}", headers: headers)
+
+      expect(response).to have_http_status(404)
+      expect(JSON.parse(response.body)).to eq({
+        "message" => "This group event does not seem to exist anymore"
+      })
+    end
+
     it "HTTP response & status" do
       group_event = create(:group_event)
       attributes  = group_event.attributes
-      get("/api/v1/group_events/#{group_event.uuid}", headers: headers)
+      get("#{PATH}/#{group_event.uuid}", headers: headers)
 
-      # Validates response status
       expect(response).to have_http_status(200)
       json_response = JSON.parse(response.body)
 
@@ -136,7 +146,7 @@ RSpec.describe "Api::V1::GroupEvents", type: :request do
   end
 
   context "create" do
-    it "create group event with valid attributes" do
+    it "group event with valid attributes" do
       uuid        = SecureRandom.uuid
       created_by  = create(:user)
       location    = create(:location)
@@ -157,9 +167,8 @@ RSpec.describe "Api::V1::GroupEvents", type: :request do
         }
       }
 
-      post("/api/v1/group_events", params: params)
+      post(PATH, params: params)
 
-      # Validates response status
       expect(response).to have_http_status(200)
       json_response = JSON.parse(response.body)
 
@@ -178,27 +187,124 @@ RSpec.describe "Api::V1::GroupEvents", type: :request do
       validate_event_from_response(json_response, attributes)
     end
 
-    pending "create group event fails with invalid attributes"
+    it "group event fails with invalid attributes" do
+      params = {
+        group_event: {
+          uuid: SecureRandom.uuid,
+          name: "Created via RSpec request",
+          description: "Created via RSpec request",
+          start_date: 2.days.ago,
+          duration_in_days: 0,
+        }
+      }
+
+      post(PATH, params: params)
+      expect(response).to have_http_status(422)
+      json_response = JSON.parse(response.body)
+
+      expect(json_response).to eq({
+        "message" => "Group event could not be created",
+        "errors" => ["Created by must exist", "Location must exist"],
+      })
+    end
   end
 
   context "update" do
-    pending "update fields :name, :description, :start_date, :end_date, :created_by_id, :location_id"
-    pending "PUT"
-    pending "PATCH"
+    it "return 404 if record could not be found" do
+      put("#{PATH}/#{SecureRandom.uuid}", headers: headers, params: {})
+
+      expect(response).to have_http_status(404)
+      expect(JSON.parse(response.body)).to eq({
+        "message" => "This group event does not seem to exist anymore"
+      })
+
+      patch("#{PATH}/#{SecureRandom.uuid}", headers: headers, params: {})
+
+      expect(response).to have_http_status(404)
+      expect(JSON.parse(response.body)).to eq({
+        "message" => "This group event does not seem to exist anymore"
+      })
+    end
+
+    it "fields :name, :description, :start_date, :end_date, :created_by_id, :location_id" do
+      group_event = create(:group_event)
+      user        = create(:user, { email: "newemail@gmail.com" })
+      location    = create(:location, { name: "Bangalore" })
+
+      params = {
+        group_event: {
+          uuid: group_event.uuid,
+          start_date: 3.days.from_now,
+          end_date: 4.days.from_now,
+          name: "New name",
+          description: "New description",
+          created_by_id: user.id,
+          location_id: location.id,
+        }
+      }
+
+      attributes = {
+        uuid: group_event.uuid,
+        name: "New name",
+        description: "New description",
+        start_date: 3.days.from_now.to_s,
+        end_date: 4.days.from_now.to_s,
+        duration: 2.days,
+        status: "draft",
+        created_by_id: user.id,
+        location_id: location.id,
+      }
+
+      put("#{PATH}/#{group_event.uuid}", params: params)
+
+      expect(response).to have_http_status(200)
+      json_response = JSON.parse(response.body)
+
+      validate_event_from_response(json_response, attributes)
+    end
+
+    it "do not allow invalid fields to be updated" do
+      group_event = create(:group_event)
+      user        = create(:user, { email: "newemail@gmail.com" })
+      location    = create(:location, { name: "Bangalore" })
+
+      params = {
+        group_event: {
+          uuid: group_event.uuid,
+          start_date: 4.days.from_now,
+          end_date: 2.days.from_now,
+          name: "New name",
+          description: "New description",
+          created_by_id: user.id,
+          location_id: location.id,
+        }
+      }
+
+      put("#{PATH}/#{group_event.uuid}", params: params)
+      expect(response).to have_http_status(422)
+      json_response = JSON.parse(response.body)
+
+      expect(json_response).to eq({
+        "message" => "Group event could not be updated",
+        "errors" => ["End date cannot be lesser than start date"],
+      })
+    end
   end
 
   context "destroy" do
-    pending "Mark group event for deletion"
-    pending "Do not allow already deleted record to be marked again"
+    pending "return 404 if record could not be found"
+    pending "mark group event for deletion"
+    pending "do not allow already deleted record to be marked again"
   end
 
   context "restore" do
-    pending "Restore group event which is marked for deletion"
-    pending "Do not allow restoring record which is not marked for deletion"
+    pending "return 404 if record could not be found"
+    pending "restore group event which is marked for deletion"
+    pending "do not allow restoring record which is not marked for deletion"
   end
 
   context "publish" do
     pending "successfully publish a group event with valid fields"
-    pending "reject publishing a group event with invalid values"
+    pending "reject publishing a group event with invalid fields"
   end
 end
