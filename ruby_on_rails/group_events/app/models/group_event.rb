@@ -17,9 +17,11 @@ class GroupEvent < ApplicationRecord
   validates :name,        presence: true, if: Proc.new { |a| a.published? }
   validates :description, presence: true, if: Proc.new { |a| a.published? }
 
+  validates_length_of :name, maximum: 100
+
   # Custom validations
-  validate :has_valid_period?, on: [:create, :update]
-  validate :has_valid_dates?,  on: [:create, :update]
+  validate :has_valid_period?,    on: [:create, :update]
+  validate :has_valid_dates?,     on: [:create, :update]
 
   before_save :try_computing_event_duration
 
@@ -52,6 +54,7 @@ class GroupEvent < ApplicationRecord
     return true
   end
 
+  # Determines whether the supplied start_date & end_date are valid
   def has_valid_dates?
     return true unless self.start_date? && self.end_date?
 
@@ -76,7 +79,7 @@ class GroupEvent < ApplicationRecord
   end
 
   def try_computing_event_duration
-    if self.duration?
+    if self.duration? && self.duration > 0
       unless self.start_date?
         self.start_date = self.end_date - self.duration + 1.day if self.end_date?
       end

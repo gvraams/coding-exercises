@@ -17,6 +17,10 @@
 require 'factory_bot'
 
 RSpec.configure do |config|
+  config.before(:each, type: :request) do
+    host! "localhost:3000/"
+  end
+
   config.include FactoryBot::Syntax::Methods
 
   config.before(:all) do

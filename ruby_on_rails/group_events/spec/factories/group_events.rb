@@ -8,6 +8,6 @@ FactoryBot.define do
     start_date { 2.days.from_now }
     end_date { 3.days.from_now }
     duration { nil }
-    status { nil }
+    status { "draft" }
   end
 end

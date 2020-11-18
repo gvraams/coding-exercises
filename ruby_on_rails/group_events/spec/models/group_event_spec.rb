@@ -5,8 +5,8 @@ def expect_fields_cant_be_blank(group_event)
 
   expect(group_event.errors.messages).to eq({
     start_date: ["can't be blank"],
-    end_date: ["can't be blank"],
-    duration: ["can't be blank"],
+    end_date:   ["can't be blank"],
+    duration:   ["can't be blank"],
   })
 end
 
@@ -34,10 +34,11 @@ RSpec.describe GroupEvent, type: :model do
     it { should validate_presence_of(:uuid) }
     it { should belong_to(:created_by) }
     it { should belong_to(:location) }
+    it { should validate_length_of(:name).is_at_most(100) }
   end
 
   context "validations as published" do
-    let(:event) {
+    let(:group_event) {
       build(:group_event, {
         status: "published",
         name: nil,
@@ -49,9 +50,9 @@ RSpec.describe GroupEvent, type: :model do
     }
 
     it "validates presence of name, description, start_date, end_date & duration" do
-      expect(event.valid?).to eq(false)
+      expect(group_event.valid?).to eq(false)
 
-      expect(event.errors.messages).to eq({
+      expect(group_event.errors.messages).to eq({
         name:        ["can't be blank"],
         description: ["can't be blank"],
         start_date:  ["can't be blank"],
@@ -62,14 +63,16 @@ RSpec.describe GroupEvent, type: :model do
   end
 
   context "with two duration related fields set" do
-    let(:group_event) { build(:group_event, {
-      created_by: @gvraams,
-      location: @chennai,
-      start_date: nil,
-      end_date: nil,
-      duration: nil,
-      status: "published",
-    }) }
+    let(:group_event) {
+      build(:group_event, {
+        created_by: @gvraams,
+        location:   @chennai,
+        start_date: nil,
+        end_date:   nil,
+        duration:   nil,
+        status:     "published",
+      })
+    }
 
     it "validates presence of 3 duration related fields" do
       expect_fields_cant_be_blank(group_event)
@@ -78,8 +81,10 @@ RSpec.describe GroupEvent, type: :model do
     it "computes end_date given start_date & duration" do
       expect_fields_cant_be_blank(group_event)
 
-      group_event.start_date = 2.days.from_now
-      group_event.duration = 3.days
+      group_event.assign_attributes({
+        start_date: 2.days.from_now,
+        duration:   3.days,
+      })
 
       expect(group_event.valid?).to be(true)
       expect(group_event.save).to be(true)
@@ -108,7 +113,7 @@ RSpec.describe GroupEvent, type: :model do
 
       group_event.assign_attributes({
         start_date: 2.days.from_now,
-        end_date: 5.days.from_now,
+        end_date:   5.days.from_now,
       })
 
       expect(group_event.valid?).to be(true)
@@ -123,8 +128,8 @@ RSpec.describe GroupEvent, type: :model do
 
       group_event.assign_attributes({
         start_date: 2.days.from_now,
-        end_date: 5.days.from_now,
-        duration: 15.days, # Invalid duration considering given start_date & end_date
+        end_date:   5.days.from_now,
+        duration:   15.days, # Invalid duration considering given start_date & end_date
       })
 
       expect(group_event.valid?).to be(true)
@@ -138,11 +143,38 @@ RSpec.describe GroupEvent, type: :model do
     it "rejects record with end_date > start_date" do
       group_event.assign_attributes({
         start_date: 5.days.from_now,
-        end_date: 2.days.from_now,
+        end_date:   2.days.from_now,
       })
 
       expect(group_event.valid?).to be(false)
       expect(group_event.errors.messages).to eq({ base: ["End date cannot be lesser than start date"] })
+    end
+
+    it "rejects record with invalid duration" do
+      group_event.assign_attributes({
+        start_date: 2.days.from_now,
+        duration: 0,
+      })
+
+      expect(group_event.valid?).to be(false)
+
+      expect(group_event.errors.messages).to eq({
+        duration: ["can't be blank"],
+        end_date: ["can't be blank"],
+      })
+
+      group_event.assign_attributes({
+        start_date: nil,
+        duration: 0,
+        end_date: 2.days.from_now,
+      })
+
+      expect(group_event.valid?).to be(false)
+
+      expect(group_event.errors.messages).to eq({
+        duration:   ["can't be blank"],
+        start_date: ["can't be blank"],
+      })
     end
 
     it "rejects record with start_date & end_date less than current time" do

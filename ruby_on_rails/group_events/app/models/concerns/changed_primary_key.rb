@@ -9,7 +9,7 @@ module ChangedPrimaryKey
     base.class_eval do
       validates :uuid, presence: true, uniqueness: true
 
-      default_scope { order(created_at: :desc) }
+      default_scope { order(created_at: :asc) }
     end
   end
 end
