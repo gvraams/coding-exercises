@@ -8,6 +8,7 @@ Rails.application.routes.draw do
         end
 
         member do
+          delete "really_delete"
           put "restore"
           put "publish"
         end

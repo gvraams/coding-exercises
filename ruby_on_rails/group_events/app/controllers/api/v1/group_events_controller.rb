@@ -72,11 +72,25 @@ class Api::V1::GroupEventsController < Api::V1::Base
     }, status: :unprocessable_entity
   end
 
+  # Removes the record from database; Record should already be marked for deletion
+  def really_delete
+    @group_event = fetch_group_event(params[:id], true) or return
+
+    if @group_event.destroy
+      return render json: { message: "Group event is deleted" }, status: :ok
+    end
+
+    render json: {
+      message: "Group event could not be deleted",
+      errors: @group_event.errors.full_messages.as_json,
+    }, status: :unprocessable_entity
+  end
+
   def restore
     # Restore deleted record
     @group_event = fetch_group_event(params[:id], true) or return
 
-    if @group_event.soft_destroy
+    if @group_event.undo_destroy
       return render json: { message: "Group event is restored" }, status: :ok
     end
 
@@ -102,7 +116,7 @@ class Api::V1::GroupEventsController < Api::V1::Base
   private
 
   def fetch_group_event(uuid, restore = false)
-    events          = restore ? GroupEvent.soft_deleted : GroupEvent.all
+    events          = restore ? GroupEvent.soft_deleted : GroupEvent.active
     group_event     = events.where("uuid = ?", uuid).first
     failure_message = "This group event does not seem to exist anymore"
 

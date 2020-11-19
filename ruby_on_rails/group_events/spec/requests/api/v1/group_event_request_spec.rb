@@ -32,7 +32,7 @@ RSpec.describe "Api::V1::GroupEvents", type: :request do
   }
 
   context "count" do
-    it "active group events count" do
+    it "returns active group events count" do
       group_event = create(:group_event)
       get("#{PATH}/count", headers: headers)
 
@@ -42,7 +42,7 @@ RSpec.describe "Api::V1::GroupEvents", type: :request do
       expect(json_response).to eq({ "count" => 1 })
     end
 
-    it "exclude records marked for deletion" do
+    it "excludes records marked for deletion" do
       group_event = create(:group_event)
       group_event.soft_destroy
 
@@ -56,7 +56,7 @@ RSpec.describe "Api::V1::GroupEvents", type: :request do
   end
 
   context "index" do
-    it "HTTP response & status" do
+    it "checks HTTP response & status" do
       group_event = create(:group_event)
       attributes  = group_event.attributes
       get(PATH, headers: headers)
@@ -69,7 +69,7 @@ RSpec.describe "Api::V1::GroupEvents", type: :request do
       validate_event_from_response(json_response.first, group_event.attributes)
     end
 
-    it "limit, offset & default order (:created_at => :asc)" do
+    it "checks limit, offset & default order (:created_at => :asc)" do
       first = create(:group_event)
 
       second = create(:group_event, {
@@ -124,7 +124,7 @@ RSpec.describe "Api::V1::GroupEvents", type: :request do
   end
 
   context "show" do
-    it "return 404 if record could not be found" do
+    it "returns 404 if record could not be found" do
       get("#{PATH}/#{SecureRandom.uuid}", headers: headers)
 
       expect(response).to have_http_status(404)
@@ -133,7 +133,7 @@ RSpec.describe "Api::V1::GroupEvents", type: :request do
       })
     end
 
-    it "HTTP response & status" do
+    it "checks HTTP response & status" do
       group_event = create(:group_event)
       attributes  = group_event.attributes
       get("#{PATH}/#{group_event.uuid}", headers: headers)
@@ -187,7 +187,7 @@ RSpec.describe "Api::V1::GroupEvents", type: :request do
       validate_event_from_response(json_response, attributes)
     end
 
-    it "group event fails with invalid attributes" do
+    it "group event failure with invalid attributes" do
       params = {
         group_event: {
           uuid: SecureRandom.uuid,
@@ -210,7 +210,7 @@ RSpec.describe "Api::V1::GroupEvents", type: :request do
   end
 
   context "update" do
-    it "return 404 if record could not be found" do
+    it "returns 404 if record could not be found" do
       put("#{PATH}/#{SecureRandom.uuid}", headers: headers, params: {})
 
       expect(response).to have_http_status(404)
@@ -263,7 +263,7 @@ RSpec.describe "Api::V1::GroupEvents", type: :request do
       validate_event_from_response(json_response, attributes)
     end
 
-    it "do not allow invalid fields to be updated" do
+    it "does not allow invalid fields to be updated" do
       group_event = create(:group_event)
       user        = create(:user, { email: "newemail@gmail.com" })
       location    = create(:location, { name: "Bangalore" })
@@ -292,19 +292,160 @@ RSpec.describe "Api::V1::GroupEvents", type: :request do
   end
 
   context "destroy" do
-    pending "return 404 if record could not be found"
-    pending "mark group event for deletion"
-    pending "do not allow already deleted record to be marked again"
+    it "returns 404 if record could not be found" do
+      delete("#{PATH}/#{SecureRandom.uuid}")
+
+      expect(response).to have_http_status(404)
+
+      expect(JSON.parse(response.body)).to eq({
+        "message" => "This group event does not seem to exist anymore",
+      })
+    end
+
+    it "marks group event for deletion" do
+      group_event = create(:group_event)
+      delete("#{PATH}/#{group_event.uuid}")
+
+      expect(response).to have_http_status(200)
+      json_response = JSON.parse(response.body)
+
+      expect(json_response).to eq({
+        "message" => "Group event is deleted",
+      })
+    end
+
+    it "returns 404 if tried to delete an already deleted record" do
+      group_event = create(:group_event)
+      group_event.soft_destroy
+      delete("#{PATH}/#{group_event.uuid}")
+
+      expect(response).to have_http_status(404)
+      json_response = JSON.parse(response.body)
+
+      expect(json_response).to eq({
+        "message" => "This group event does not seem to exist anymore",
+      })
+    end
+  end
+
+  context "really_destroy" do
+    it "returns 404 if record could not be found" do
+      delete("#{PATH}/#{SecureRandom.uuid}/really_delete")
+
+      expect(response).to have_http_status(404)
+
+      expect(JSON.parse(response.body)).to eq({
+        "message" => "This group event does not seem to exist anymore",
+      })
+    end
+
+    it "marks group event for deletion" do
+      group_event = create(:group_event)
+      group_event.soft_destroy
+      delete("#{PATH}/#{group_event.uuid}/really_delete")
+
+      expect(response).to have_http_status(200)
+      json_response = JSON.parse(response.body)
+
+      expect(json_response).to eq({
+        "message" => "Group event is deleted",
+      })
+    end
+
+    it "returns 404 if tried to delete a record that is not marked for deletion" do
+      group_event = create(:group_event)
+      delete("#{PATH}/#{group_event.uuid}/really_delete")
+
+      expect(response).to have_http_status(404)
+      json_response = JSON.parse(response.body)
+
+      expect(json_response).to eq({
+        "message" => "This group event does not seem to exist anymore",
+      })
+    end
   end
 
   context "restore" do
-    pending "return 404 if record could not be found"
-    pending "restore group event which is marked for deletion"
-    pending "do not allow restoring record which is not marked for deletion"
+    it "returns 404 if record could not be found" do
+      put("#{PATH}/#{SecureRandom.uuid}/restore")
+
+      expect(response).to have_http_status(404)
+
+      expect(JSON.parse(response.body)).to eq({
+        "message" => "This group event does not seem to exist anymore",
+      })
+    end
+
+    it "restores group event which was deleted" do
+      group_event = create(:group_event)
+      group_event.soft_destroy
+      put("#{PATH}/#{group_event.uuid}/restore")
+
+      expect(response).to have_http_status(200)
+      json_response = JSON.parse(response.body)
+
+      expect(json_response).to eq({
+        "message" => "Group event is restored",
+      })
+    end
+
+    it "returns 404 if tried to restore a regular record" do
+      group_event = create(:group_event)
+      group_event.soft_destroy
+      delete("#{PATH}/#{group_event.uuid}")
+
+      expect(response).to have_http_status(404)
+      json_response = JSON.parse(response.body)
+
+      expect(json_response).to eq({
+        "message" => "This group event does not seem to exist anymore",
+      })
+    end
   end
 
   context "publish" do
-    pending "successfully publish a group event with valid fields"
-    pending "reject publishing a group event with invalid fields"
+    it "returns 404 if record could not be found" do
+      put("#{PATH}/#{SecureRandom.uuid}/publish")
+
+      expect(response).to have_http_status(404)
+
+      expect(JSON.parse(response.body)).to eq({
+        "message" => "This group event does not seem to exist anymore",
+      })
+    end
+
+    it "publishes group event" do
+      group_event = create(:group_event)
+      put("#{PATH}/#{group_event.uuid}/publish")
+
+      expect(response).to have_http_status(200)
+      json_response = JSON.parse(response.body)
+
+      expect(json_response).to eq({
+        "message" => "Group event is published",
+      })
+    end
+
+    it "does not publish if invalid fields are supplied" do
+      group_event = create(:group_event, {
+        duration: nil,
+        start_date: nil,
+        end_date: nil,
+      })
+
+      put("#{PATH}/#{group_event.uuid}/publish")
+
+      expect(response).to have_http_status(422)
+      json_response = JSON.parse(response.body)
+
+      expect(json_response).to eq({
+        "errors" => [
+          "Duration can't be blank",
+          "Start date can't be blank",
+          "End date can't be blank",
+        ],
+        "message" => "Group event could not be published",
+      })
+    end
   end
 end
