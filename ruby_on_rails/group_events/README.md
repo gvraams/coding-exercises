@@ -17,3 +17,9 @@ RAILS_ENV=test bundle exec rake db:migrate
 ```
 rspec spec/
 ```
+
+* To create User & Location objects, log into rails console with `bundle exec rails c` and execute:
+```
+user     = User.create uuid: SecureRandom.uuid, name: "Name", email: "someemail@domain.com", password: "password"
+location = Location.create uuid: SecureRandom.uuid, name: "Place"
+```
